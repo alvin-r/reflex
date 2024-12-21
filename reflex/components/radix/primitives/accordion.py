@@ -6,7 +6,6 @@ from typing import Any, List, Literal, Tuple, Union
 
 from reflex.components.component import Component, ComponentNamespace
 from reflex.components.core.colors import color
-from reflex.components.core.cond import cond
 from reflex.components.lucide.icon import Icon
 from reflex.components.radix.primitives.base import RadixPrimitiveComponent
 from reflex.components.radix.themes.base import LiteralAccentColor, LiteralRadius
@@ -143,27 +142,35 @@ class AccordionRoot(AccordionComponent):
         Returns:
             The style of the component.
         """
+        # Initialize custom attributes when necessary
+        custom_attrs = self.custom_attrs
         if self.radius is not None:
-            self.custom_attrs["data-radius"] = self.radius
-        if self.variant is None:
-            # The default variant is classic
-            self.custom_attrs["data-variant"] = "classic"
+            custom_attrs["data-radius"] = self.radius
+        variant = self.variant if self.variant is not None else "classic"
+        custom_attrs["data-variant"] = variant
+
+        # Cache the color values
+        color_accent_9 = color("accent", 9)
+        color_black_4 = color("black", 4, alpha=True)
+        color_black_1 = color("black", 1, alpha=True)
+        color_accent_6 = color("accent", 6)
+        color_accent_3 = color("accent", 3)
 
         style = {
             "border_radius": "var(--radius-4)",
-            "box_shadow": f"0 2px 10px {color('black', 1, alpha=True)}",
+            "box_shadow": f"0 2px 10px {color_black_1}",
             "&[data-variant='classic']": {
-                "background_color": color("accent", 9),
-                "box_shadow": f"0 2px 10px {color('black', 4, alpha=True)}",
+                "background_color": color_accent_9,
+                "box_shadow": f"0 2px 10px {color_black_4}",
             },
             "&[data-variant='soft']": {
-                "background_color": color("accent", 3),
+                "background_color": color_accent_3,
             },
             "&[data-variant='outline']": {
-                "border": f"1px solid {color('accent', 6)}",
+                "border": f"1px solid {color_accent_6}",
             },
             "&[data-variant='surface']": {
-                "border": f"1px solid {color('accent', 6)}",
+                "border": f"1px solid {color_accent_6}",
                 "background_color": "var(--accent-surface)",
             },
             "&[data-variant='ghost']": {
@@ -174,10 +181,14 @@ class AccordionRoot(AccordionComponent):
             "--animation-easing": self.easing,
         }
         if self.show_dividers is not None:
-            style["--divider-px"] = cond(self.show_dividers, "1px", "0")
+            style["--divider-px"] = "1px" if self.show_dividers else "0"
         else:
-            style["&[data-variant='outline']"]["--divider-px"] = "1px"
-            style["&[data-variant='surface']"]["--divider-px"] = "1px"
+            divider_px = "1px"
+            outline = style["&[data-variant='outline']"]
+            surface = style["&[data-variant='surface']"]
+            outline["--divider-px"] = divider_px
+            surface["--divider-px"] = divider_px
+
         return Style(style)
 
 
