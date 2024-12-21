@@ -10,6 +10,7 @@ from reflex.components.core.cond import cond
 from reflex.components.lucide.icon import Icon
 from reflex.components.radix.primitives.base import RadixPrimitiveComponent
 from reflex.components.radix.themes.base import LiteralAccentColor, LiteralRadius
+from reflex.constants.colors import Color, ColorType, ShadeType
 from reflex.event import EventHandler
 from reflex.style import Style
 from reflex.vars import get_uuid_string_var
@@ -39,13 +40,9 @@ def _inherited_variant_selector(
     """
     if not selectors:
         selectors = ("&",)
-    # Prefer the `data-variant` that is set directly on the selector,
-    # but also inherit the `data-variant` from any parent element.
     return ", ".join(
-        [
-            f"{selector}[data-variant='{variant}'], *:where([data-variant='{variant}']) {selector}"
-            for selector in selectors
-        ]
+        f"{selector}[data-variant='{variant}'], *:where([data-variant='{variant}']) {selector}"
+        for selector in selectors
     )
 
 
@@ -81,6 +78,30 @@ def on_value_change(value: Var[str | List[str]]) -> Tuple[Var[str | List[str]]]:
         The value of the event.
     """
     return (value,)
+
+
+def _get_divider_style() -> str:
+    """Get the divider style with color applied.
+
+    Returns:
+        The divider style string.
+    """
+    color_value = create_color("gray", 6, alpha=True)
+    return f"var(--divider-px) solid {color_value}"
+
+
+def create_color(color: ColorType, shade: ShadeType = 7, alpha: bool = False) -> Color:
+    """Create a color object.
+
+    Args:
+        color: The color to use.
+        shade: The shade of the color to use.
+        alpha: Whether to use the alpha variant of the color.
+
+    Returns:
+        The color object.
+    """
+    return Color(color, shade, alpha)
 
 
 class AccordionRoot(AccordionComponent):
@@ -266,7 +287,7 @@ class AccordionItem(AccordionComponent):
         Returns:
             The style of the component.
         """
-        divider_style = f"var(--divider-px) solid {color('gray', 6, alpha=True)}"
+        divider_style = _get_divider_style()
         return {
             "overflow": "hidden",
             "width": "100%",
